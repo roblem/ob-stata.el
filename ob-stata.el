@@ -36,7 +36,7 @@
 ;; not tried to implement it.
 ;; --Ista, 07/30/2014
 
-;; The version is changed from Ista's in 2 ways:
+;; The version is changed from Ista's in 3 ways:
 ;; 1. Some API changes necessitated changes as described near
 ;; the bottom of this comment:
 ;; https://emacs.stackexchange.com/questions/29885/error-when-stata-t-added-to-org-babel-do-load-languages-in-an-attempt-to-eva/39099
@@ -44,6 +44,9 @@
 ;; :exports both will have fontified commands and plain text
 ;; commands in the output.  This version removes commands from
 ;; the output.
+;; 3. The regex to clean up extra prompts was overly aggressive and
+;; messed with some output like bstrap and estat classification. It has been
+;; toned down and I'm not sure it is even necessary.
 ;; --Rob Hicks, 02/27/2018
 
 ;;; Requirements:
@@ -303,23 +306,23 @@ string.  If RESULT-TYPE equals 'value Not supported"
 	column-names-p)))
     (output
      (org-babel-stata-strip-commands
-     (mapconcat
-      #'org-babel-chomp
-      (butlast
-       (delq nil
-	     (mapcar
-	      (lambda (line) (when (> (length line) 0) line))
+      (mapconcat
+       #'org-babel-chomp
+       (butlast
+	(delq nil
 	      (mapcar
-	       (lambda (line) ;; cleanup extra prompts left in output
-		 (if (string-match
-		      "^\\([ ]*[>+\\.][ ]?\\)+\\([[0-9]+\\|[ ]\\)" line)
-		     (substring line (match-end 1))
-		   line))
-	       (org-babel-comint-with-output (session org-babel-stata-eoe-output)
-		 (insert (mapconcat #'org-babel-chomp
-				    (list body org-babel-stata-eoe-indicator)
-				    "\n"))
-		 (inferior-ess-send-input)))))) "\n") body))))
+	       (lambda (line) (when (> (length line) 0) line))
+	       (mapcar
+		(lambda (line) ;; cleanup extra prompts left in output
+		  (if (string-match
+		       "^[.:]" line)
+		      (substring line (match-end 1))
+		    line))
+		(org-babel-comint-with-output (session org-babel-stata-eoe-output)
+		  (insert (mapconcat #'org-babel-chomp
+				     (list body org-babel-stata-eoe-indicator)
+				     "\n"))
+		  (inferior-ess-send-input)))))) "\n") body))))
 
 (defun org-babel-stata-process-value-result (result column-names-p)
   "stata-specific processing of return value.
