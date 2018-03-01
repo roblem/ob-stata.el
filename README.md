@@ -6,4 +6,4 @@ that
 
 The description of what this does and how to use it is [found here](http://rlhick.people.wm.edu/posts/stata-and-literate-programming-in-emacs-org-mode.html).
 
-This only works with `:results output` and for stata sessions invoked by `:session`. 
+The modifications described above only work with `:results output` and for stata sessions invoked by `:session`. 
