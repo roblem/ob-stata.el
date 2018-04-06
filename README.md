@@ -1,6 +1,5 @@
 # ob-stata.el
-Modified version of `ob-stata.el` from a [mirror of the EMACS repository](https://github.com/Fuco1/org-mode/blob/master/contrib/lisp/ob-stata.el) 
-that
+Modified version of `ob-stata.el` from the EMACS repository that
 1. strips commands in org-mode src output
 2. refines the regex replace to avoid deleting output from some stata commands
 
