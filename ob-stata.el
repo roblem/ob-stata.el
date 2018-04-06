@@ -47,7 +47,7 @@
 ;; 3. The regex to clean up extra prompts was overly aggressive and
 ;; messed with some output like bstrap and estat classification. It has been
 ;; toned down and I'm not sure it is even necessary.
-;; --Rob Hicks, 02/27/2018
+;; --Rob, 02/27/2018
 
 ;;; Requirements:
 ;; Stata: http://stata.com
@@ -84,7 +84,7 @@
   "Name of command to use for executing stata code."
   :group 'org-babel
   :version "25.1"
-  :package-version '(Org . "8.2")
+  :package-version '(Org . "8.3")
   :type 'string)
 
 (defvar ess-local-process-name) ; dynamically scoped
@@ -157,17 +157,16 @@ This function is called by `org-babel-execute-src-block'."
      (lambda (pair)
        (org-babel-stata-assign-elisp
 	(car pair) (cdr pair)
-	(equal "yes" (cdr (assoc :colnames params)))
-	(equal "yes" (cdr (assoc :rownames params)))))
+	(equal "yes" (cdr (assq :colnames params)))
+	(equal "yes" (cdr (assq :rownames params)))))
      (mapcar
       (lambda (i)
 	(cons (car (nth i vars))
 	      (org-babel-reassemble-table
 	       (cdr (nth i vars))
-	       (cdr (nth i (cdr (assoc :colname-names params))))
-	       (cdr (nth i (cdr (assoc :rowname-names params)))))))
+	       (cdr (nth i (cdr (assq :colname-names params))))
+	       (cdr (nth i (cdr (assq :rowname-names params)))))))
       (org-number-sequence 0 (1- (length vars)))))))
-
 
 (defun org-babel-stata-quote-csv-field (s)
   "Quote field S for export to stata."
@@ -249,7 +248,7 @@ current code buffer."
 			:test #'equal)"\n")) 
 
 (defun org-babel-stata-evaluate
-    (session body result-type result-params column-names-p row-names-p)
+  (session body result-type result-params column-names-p row-names-p)
   "Evaluate stata code in BODY."
   (if session
       (org-babel-stata-evaluate-session
@@ -258,7 +257,7 @@ current code buffer."
      body result-type result-params column-names-p row-names-p)))
 
 (defun org-babel-stata-evaluate-external-process
-    (body result-type result-params column-names-p row-names-p)
+  (body result-type result-params column-names-p row-names-p)
   "Evaluate BODY in external stata process.
 If RESULT-TYPE equals 'output then return standard output as a
 string.  If RESULT-TYPE equals 'value then return the value of the
@@ -280,10 +279,11 @@ last statement in BODY, as elisp."
     (output (org-babel-eval org-babel-stata-command body))))
 
 (defun org-babel-stata-evaluate-session
-    (session body result-type result-params column-names-p row-names-p)
+  (session body result-type result-params column-names-p row-names-p)
   "Evaluate BODY in SESSION.
 If RESULT-TYPE equals 'output then return standard output as a
-string.  If RESULT-TYPE equals 'value Not supported"
+string.  If RESULT-TYPE equals 'value then return the value of the
+last statement in BODY, as elisp."
   (cl-case result-type
     (value
      (with-temp-buffer
