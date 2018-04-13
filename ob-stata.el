@@ -47,7 +47,7 @@
 ;; 3. The regex to clean up extra prompts was overly aggressive and
 ;; messed with some output like bstrap and estat classification. It has been
 ;; toned down and I'm not sure it is even necessary.
-;; 4. Line continuation (using //) is supported
+;; 4. Line continuation (using ///) is supported
 ;; --Rob, 04/13/2018
 
 ;;; Requirements:
