@@ -36,18 +36,19 @@
 ;; not tried to implement it.
 ;; --Ista, 07/30/2014
 
-;; The version is changed from Ista's in 3 ways:
+;; The version is changed from Ista's in 4 ways:
 ;; 1. Some API changes necessitated changes as described near
 ;; the bottom of this comment:
 ;; https://emacs.stackexchange.com/questions/29885/error-when-stata-t-added-to-org-babel-do-load-languages-in-an-attempt-to-eva/39099
 ;; 2. The "Ista 2014" version returns results and commands, so
 ;; :exports both will have fontified commands and plain text
 ;; commands in the output.  This version removes commands from
-;; the output.
+;; the output for most cases.
 ;; 3. The regex to clean up extra prompts was overly aggressive and
 ;; messed with some output like bstrap and estat classification. It has been
 ;; toned down and I'm not sure it is even necessary.
-;; --Rob, 02/27/2018
+;; 4. Line continuation (using //) is supported
+;; --Rob, 04/13/2018
 
 ;;; Requirements:
 ;; Stata: http://stata.com
@@ -144,7 +145,7 @@ This function is called by `org-babel-execute-src-block'."
   (save-window-excursion
     (let ((buffer (org-babel-prep-session:stata session params)))
       (with-current-buffer buffer
-        (goto-char (process-mark (get-buffer-process (current-buffer))))
+        (goto-char (process-mark (get-buffer-process (current-buffer)))) 
         (insert (org-babel-chomp body)))
       buffer)))
 
@@ -248,16 +249,19 @@ current code buffer."
 			:test #'equal)"\n")) 
 
 (defun org-babel-stata-evaluate
-  (session body result-type result-params column-names-p row-names-p)
-  "Evaluate stata code in BODY."
+    (session body result-type result-params column-names-p row-names-p)
+  "Evaluate stata code in BODY after line continuation syntax stripped."
   (if session
-      (org-babel-stata-evaluate-session
-       session body result-type result-params column-names-p row-names-p)
+      (progn
+	(setq body_stripped body)
+	(setq body_stripped (replace-regexp-in-string "\/\/\/\n" "" body_stripped))
+	(org-babel-stata-evaluate-session
+	 session body_stripped result-type result-params column-names-p row-names-p))
     (org-babel-stata-evaluate-external-process
      body result-type result-params column-names-p row-names-p)))
 
 (defun org-babel-stata-evaluate-external-process
-  (body result-type result-params column-names-p row-names-p)
+    (body result-type result-params column-names-p row-names-p)
   "Evaluate BODY in external stata process.
 If RESULT-TYPE equals 'output then return standard output as a
 string.  If RESULT-TYPE equals 'value then return the value of the
@@ -279,7 +283,7 @@ last statement in BODY, as elisp."
     (output (org-babel-eval org-babel-stata-command body))))
 
 (defun org-babel-stata-evaluate-session
-  (session body result-type result-params column-names-p row-names-p)
+    (session body result-type result-params column-names-p row-names-p)
   "Evaluate BODY in SESSION.
 If RESULT-TYPE equals 'output then return standard output as a
 string.  If RESULT-TYPE equals 'value then return the value of the
@@ -334,4 +338,3 @@ Insert hline if column names in output have been requested."
 (provide 'ob-stata)
 
 ;;; ob-stata.el ends here
-
