@@ -1,3 +1,6 @@
+
+This repository has been moved to https://gitlab.com/robhicks/ob-stata.el.  Please track progress and report issues there.
+
 # ob-stata.el
 Modified version of `ob-stata.el` from the EMACS repository that
 1. strips most commands in org-mode src output (see remaining issues below)
